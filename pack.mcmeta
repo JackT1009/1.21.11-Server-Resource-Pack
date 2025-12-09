@@ -1,10 +1,6 @@
 {
   "pack": {
-    "pack_format": 46,
-    "description": "Vattic's Style in 64x by Alex Zeuselpro and some others"
-  },
-    "supported_formats": {
-    "min_inclusive": 46,
-    "max_inclusive": 46
+    "pack_format": 34,
+    "description": "Server Resource Pack"
   }
 }
