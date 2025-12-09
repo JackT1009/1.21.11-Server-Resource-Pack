@@ -3,9 +3,9 @@
 	"credit": "Made with Blockbench",
 	"parent": "minecraft:item/generated",
 	"textures": {
-		"0": "western_hat/base_walls",
-		"1": "western_hat/belt",
-		"particle": "western_hat/base_walls"
+		"0": "western_hat/Base_walls",
+		"1": "western_hat/Belt",
+		"particle": "western_hat/Base_walls"
 	},
 	"elements": [
 		{
