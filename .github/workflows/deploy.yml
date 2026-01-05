@@ -2,7 +2,8 @@ name: Deploy Resource Pack
 
 on:
   push:
-    branches: ["main"]
+    # Trigger on BOTH branches
+    branches: ["main", "test"]
 
 permissions:
   contents: write
@@ -27,28 +28,48 @@ jobs:
       - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ github.run_number }}
-          name: Pack Update v${{ github.run_number }}
+          # We add the branch name to the tag so releases don't conflict
+          tag_name: ${{ github.ref_name }}-v${{ github.run_number }}
+          name: ${{ github.ref_name }} Pack v${{ github.run_number }}
           files: resourcepack.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Notify Minecraft Server
+      - name: Notify Correct Server
         env:
           PANEL_URL: ${{ secrets.PTERODACTYL_URL }}
           API_KEY: ${{ secrets.PTERODACTYL_KEY }}
-          SERVER_ID: ${{ secrets.SERVER_ID }}
-          PACK_URL: https://github.com/${{ github.repository }}/releases/download/v${{ github.run_number }}/resourcepack.zip
+          # Load BOTH IDs so we can pick one
+          TEST_ID: ${{ secrets.SERVER_ID }}
+          PROD_ID: ${{ secrets.ATM10_SERVER_ID }}
+          # Build the download link dynamically
+          PACK_URL: https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}-v${{ github.run_number }}/resourcepack.zip
         run: |
-          # FIX: The mod requires quotes around the URL: "https://..."
-          # We use backslashes (\) to ensure the quotes travel safely through the API.
+          # ---------------------------------------------------
+          # LOGIC SWITCH: Check which branch we are on
+          # ---------------------------------------------------
           
-          # This constructs the command: pack set "URL" push
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "Branch is MAIN. Deploying to ATM 10 (Production)."
+            TARGET_ID="$PROD_ID"
+          else
+            echo "Branch is TEST. Deploying to Existing Server (Test)."
+            TARGET_ID="$TEST_ID"
+          fi
+
+          # ---------------------------------------------------
+          # SEND COMMAND
+          # ---------------------------------------------------
+          
+          # Command for Better Server Packs (Fabric/NeoForge)
           CMD="pack set \\\"$PACK_URL\\\" push"
 
-          echo "Sending command: $CMD"
+          echo "Waiting 15 seconds for GitHub..."
+          sleep 15
 
-          curl -X POST "$PANEL_URL/api/client/servers/$SERVER_ID/command" \
+          echo "Sending command to Server ID: $TARGET_ID"
+
+          curl -X POST "$PANEL_URL/api/client/servers/$TARGET_ID/command" \
             -H "Authorization: Bearer $API_KEY" \
             -H "Content-Type: application/json" \
             -H "Accept: Application/vnd.pterodactyl.v1+json" \
