@@ -21,11 +21,14 @@
 			}
 		}
 	],
-    "display": {
+	"display": {
 		"gui": {
 			"rotation": [0, -153, 0],
 			"translation": [2.75, -1.75, 0.25],
 			"scale": [0.65, 0.65, 0.65]
+		},
+		"head": {
+			"translation": [0, 9.25, 0]
 		}
 	}
 }
